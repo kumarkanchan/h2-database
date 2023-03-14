@@ -1,26 +1,38 @@
 package com.h2database;
 
-import com.h2database.dao.UserRepository;
 import com.h2database.entities.User;
+import com.h2database.service.UserDataAccessException;
+import com.h2database.service.UserService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+
 @SpringBootApplication
+@ComponentScan({"com.h2database.dao", "com.h2database.entities", "com.h2database.service"})
 public class H2DatabaseApplication {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UserDataAccessException {
 
         ConfigurableApplicationContext context = SpringApplication.run(H2DatabaseApplication.class, args);
-        UserRepository userRepository = context.getBean(UserRepository.class);
+        UserService userService = context.getBean(UserService.class);
 
-        createUser(userRepository);
-        createUsers(userRepository);
+        //CRUD - Create, Read, Update and Delete
+        userService.createUsers(getUser());
+
+        User user = userService.findUserById(1);
+        System.out.println(user);
+
+        userService.findAllUsers().forEach(System.out::println);
+        userService.updateUserAgeById(1, 35);
+        userService.deleteUserById(2);
     }
-    private static void createUsers(UserRepository userRepository) {
+
+    private static List<User> getUserList() {
         User kk = new User();
         kk.setName("KANCHAN KUMAR");
         kk.setAge(30);
@@ -34,17 +46,14 @@ public class H2DatabaseApplication {
         List<User> userList = new ArrayList<>();
         userList.add(kk);
         userList.add(ram);
-        Iterable<User> dbSaveUser = userRepository.saveAll(userList);
-        System.out.println("Following User Save into DB");
-        dbSaveUser.forEach(System.out::println);
+        return userList;
     }
-    private static void createUser(UserRepository userRepository) {
-        User user = new User();
-        user.setName("KANCHAN");
-        user.setAge(30);
-        user.setDob(LocalDate.of(1990, Month.DECEMBER, 16));
-        User dbUser = userRepository.save(user);
-        System.out.println("Following User Save into DB");
-        System.out.println(dbUser);
+
+    private static User getUser() {
+        User ss = new User();
+        ss.setName("SS Master");
+        ss.setAge(30);
+        ss.setDob(LocalDate.of(1998, Month.DECEMBER, 20));
+        return ss;
     }
 }
